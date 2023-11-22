@@ -13,7 +13,7 @@ def moment(f, n, dtype=None, device=None):
     """
 
     dtype, device = explicit_default_types(dtype, device)
-    gen = torch.Generator(device="cpu").manual_seed(0)
+    gen = torch.Generator(device=device).manual_seed(0)
     z = torch.randn(1_000_000, generator=gen, dtype=torch.float64).to(dtype=dtype, device=device)
     return f(z).pow(n).mean()
 
@@ -38,9 +38,9 @@ class normalize2mom(torch.nn.Module):
             from e3nn.util._argtools import _get_device
 
             device = _get_device(f)
-
+        dtype = dtype if dtype is not None else torch.float64
         with torch.no_grad():
-            cst = moment(f, 2, dtype=torch.float64, device="cpu").pow(-0.5).item()
+            cst = moment(f, 2, dtype=dtype, device=device).pow(-0.5).item()
 
         if abs(cst - 1) < 1e-4:
             self._is_id = True

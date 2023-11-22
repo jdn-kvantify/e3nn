@@ -31,6 +31,18 @@ class Compose(torch.nn.Module):
         return self.second(x)
 
 
+class _Compose(torch.nn.Module):
+    def __init__(self, first, second) -> None:
+        super().__init__()
+        self.first = first
+        self.second = second
+
+    def forward(self, node_features, node_attr, edge_src, edge_dst, edge_attr, edge_scalars):
+        x = self.first(node_features, node_attr, edge_src, edge_dst, edge_attr, edge_scalars)
+        return self.second(x)
+
+
+
 class MessagePassing(torch.nn.Module):
     r"""
 
@@ -121,7 +133,7 @@ class MessagePassing(torch.nn.Module):
             conv = Convolution(
                 irreps_node, self.irreps_node_attr, self.irreps_edge_attr, gate.irreps_in, fc_neurons, num_neighbors
             )
-            self.layers.append(Compose(conv, gate))
+            self.layers.append(_Compose(conv, gate))
             irreps_node = gate.irreps_out
             self.irreps_node_sequence.append(irreps_node)
 
